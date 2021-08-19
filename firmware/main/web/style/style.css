@@ -25,6 +25,7 @@ body {
 .flat-2{
     flex: 1;
     display: flex;
+    justify-content: space-around;
 }
 
 button {
