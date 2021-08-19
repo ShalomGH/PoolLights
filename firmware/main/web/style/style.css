@@ -2,10 +2,7 @@ body {
     text-align: center;
     height: 100%;
     background: lemonchiffon;
-
 }
-
-
 
 .container-1{
     padding: 5%;
@@ -18,12 +15,10 @@ body {
 }
 
 .flat-1{
-    flex: 1;
-    position: relative;
+    justify-content: space-around;
 }
 
 .flat-2{
-    flex: 1;
     display: flex;
     justify-content: space-around;
 }
