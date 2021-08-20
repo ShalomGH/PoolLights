@@ -22,7 +22,7 @@ body {
     grid-template-columns: 1fr 1fr 1fr;
 }
 
-button {
+input [type= button] {
     padding: 5% 15%;
 }
 
