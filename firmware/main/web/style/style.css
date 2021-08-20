@@ -4,26 +4,25 @@ body {
     background: lemonchiffon;
 }
 
-.container-1{
+.container-1 {
     padding: 5%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
-.container-1 div{
-    padding-top: 10px;
+.box-1 {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 3;
 }
 
-.flat-1{
-    justify-content: space-around;
+.box-2 {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 3;
 }
-
-.flat-2{
-    display: flex;
-    justify-content: space-around;
-}
-
 button {
-    padding: 5% 15%;
-    font-size: 20px;
+
 }
