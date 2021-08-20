@@ -1,28 +1,28 @@
 body {
     text-align: center;
+
     height: 100%;
     background: lemonchiffon;
 }
 
 .container-1 {
+    align-items: center;
     padding: 5%;
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-row-gap: 1em;
+}
+
+/*.box-1 button {*/
+/*    padding: 10% 100%;*/
+/*}*/
+
+.flat-2 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
 
-.box-1 {
-    grid-column-start: 1;
-    grid-column-end: 4;
-    grid-row-start: 1;
-    grid-row-end: 3;
-}
-
-.box-2 {
-    grid-column-start: 1;
-    grid-column-end: 2;
-    grid-row-start: 2;
-    grid-row-end: 3;
-}
 button {
-
+    padding: 5% 15%;
 }
+
