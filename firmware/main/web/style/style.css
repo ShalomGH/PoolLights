@@ -8,14 +8,28 @@ body {
     align-items: center;
     padding: 5%;
     display: grid;
-    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
     grid-row-gap: 1em;
 }
-
 .flat-2 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 1em;
+}
+.flat-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1em;
+}
+
+.flat-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1em;
+}
+
+output {
+    background: #cec2c2;
 }
 
 input {
