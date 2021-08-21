@@ -4,26 +4,38 @@ body {
     background: lemonchiffon;
 }
 
-.container-1{
+.container-1 {
+    align-items: center;
     padding: 5%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+    grid-row-gap: 1em;
+}
+.flat-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1em;
+}
+.flat-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1em;
 }
 
-.container-1 div{
-    padding-top: 10px;
+.flat-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 1em;
 }
 
-.flat-1{
-    justify-content: space-around;
+output {
+    background: #cec2c2;
 }
 
-.flat-2{
-    display: flex;
-    justify-content: space-around;
+input {
+    width: 100%;
+    height: 100%;
+    background: chartreuse;
+    border: 0;
 }
 
-button {
-    padding: 5% 15%;
-    font-size: 20px;
-}
