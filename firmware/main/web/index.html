@@ -27,9 +27,9 @@
     </div>
 </div>
 <script>
-    var led = document.getElementById("ON")
+    let led = document.getElementById("ON");
     function led_inverse() {
-        var request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
         request.open('GET', '/led_switch', false);
         request.send();
     }
