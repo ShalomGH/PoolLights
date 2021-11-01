@@ -2,17 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            text-align: center;
+            height: 100%;
+            width: 100%;
+            background: #eff0d1;
+            font-size: 30px;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        .container-1 {
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            padding: 5%;
+            display: grid;
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+            grid-row-gap: 1em;
+        }
+
+        .flat-1 {
+            width: 100%;
+            height: 100%;
+            display: grid;
+        }
+
+        .flat-2 {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 1em;
+        }
+
+        .flat-3 {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 1em;
+        }
+
+        .flat-4 {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 1em;
+        }
+
+        output {
+            background: #d7c0d0;
+            text-align: center;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            height: 100%;
+            background: #77ba99;
+            border: 0;
+            font-size: 25px;
+        }
+
+        .led_on{
+            background: #00ff11;
+        }
+
+        .led_off{
+            background: #ff0007;
+        }
+
+    </style>
     <title>PoolLights</title>
 </head>
 <body>
 <div class="container-1">
     <div class="flat-1">
-        <input type="button" value="ON" id="ON">
+        <input type="button" value="ON" id="ON" class="">
     </div>
     <div class="flat-2">
         <input type="button" value="<--" class="r-">
-        <output datatype="text">mode</output>
+        <output datatype="text" id="efe">mode</output>
         <input type="button" value="-->" class="r+">
     </div>
     <div class="flat-3">
@@ -28,11 +104,41 @@
 </div>
 <script>
     let led = document.getElementById("ON");
+    let led_status = 0;
+    function led_state(){
+        let request = new XMLHttpRequest();
+        request.open('GET', '/led_status', true);
+        request.onload = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                let response = request.responseText;
+                led_status = Number.parseInt(response);
+                if (led_status == 0)
+                    led.classList.add('led_on');
+                else
+                    led.classList.add('led_off');
+            }
+        }
+        request.send();
+    }
     function led_inverse() {
         let request = new XMLHttpRequest();
         request.open('GET', '/led_switch', false);
         request.send();
+        if (request.readyState == 4 && request.status == 200) {
+            let response = request.responseText;
+            if (response == '0') {
+                led.v
+                led.classList.remove('led_off');
+                led.classList.add('led_on');
+                led_status = 0;
+            } else {
+                led.classList.remove('led_on');
+                led.classList.add('led_off');
+                led_status = 1;
+            }
+        }
     }
+    document.addEventListener('DOMContentLoaded', led_state);
     led.addEventListener("click", led_inverse);
 </script>
 </body>
