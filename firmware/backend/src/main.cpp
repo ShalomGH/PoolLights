@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <FastLED.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
@@ -9,9 +8,6 @@
 
 /************* Led Settings ***********/
 const byte led = 2;       // Led pin
-const byte NUM_LEDS = 1;  // Number of LEDs
-const byte DATA_PIN = D3; // Data pin for ws2812
-CRGB leds[NUM_LEDS];      // Define the array of leds
 
 
 /************ Wi-Fi Settings **********/
@@ -32,25 +28,38 @@ ESP8266WebServer HTTP(80);
 bool state = 0;
 
 
+//effects requst handler
+void effectHandler() {
+    if (HTTP.argName(0) == "effect" && HTTP.argName(1) == "param2") {   //check for correct params
+      Serial.print("effect = ");
+      Serial.println(HTTP.arg(1));
+
+      Serial.print("param2 = ");
+      Serial.println(HTTP.arg(2));
+      HTTP.send(200);
+    }
+    else {  // bad requests handler
+      HTTP.send(400, "text/plain", "Bad Request");
+      Serial.println("Bad Request");
+    }
+}
+
+
+// switch function
 String led_switch() {
-  if (state == 1)
-  {
+  if (state == 1){
     state = 0;
     Serial.println("on");
-    leds [1] = CRGB::White;
-    FastLED.show();
   } else {
     state = 1;
     Serial.println("off");
-    leds[1] = CRGB::Red;
-    FastLED.show();
   }
-
   digitalWrite(led, state);
   return String(state);
 }
 
 
+// on/off status checker
 String led_status() {
   if (digitalRead(led)) {
     state = 1;
@@ -61,6 +70,7 @@ String led_status() {
 }
 
 
+// file handler
 String getContentType(String filename) {
   if (filename.endsWith(".html")) return "text/html";
   else if (filename.endsWith(".css")) return "text/css";
@@ -83,12 +93,8 @@ bool handleFileRead(String path) {
 
 
 void setup() {
-
   pinMode(led, OUTPUT);
   Serial.begin(9600);
-
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-
 
   /****** Wi-Fi connection ******/
   WiFi.begin(ssid, password);
@@ -99,6 +105,7 @@ void setup() {
   }
   Serial.println("connected");
 
+  //
   SPIFFS.begin();
   ftpSrv.begin("relay", "relay");
   HTTP.begin();
@@ -107,6 +114,7 @@ void setup() {
   // Processing HTTP requests
   HTTP.on("/led_switch", []() {HTTP.send(200, "text/plain", led_switch()); });  // Turning on the flashlight
   HTTP.on("/led_status", []() {HTTP.send(200, "text/plain", led_status()); });  // Status flashlight
+  HTTP.on("/effect", effectHandler); //Associate the handler function to the path
 
   HTTP.onNotFound([]() {
     if (!handleFileRead(HTTP.uri()))
