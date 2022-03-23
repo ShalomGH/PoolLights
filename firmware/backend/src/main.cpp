@@ -4,6 +4,7 @@
 #include <FS.h>
 #include <ESP8266FtpServer.h>
 #include <pass.h>
+#include <Wire.h>
 
 
 /************* Led Settings ***********/
@@ -28,15 +29,29 @@ ESP8266WebServer HTTP(80);
 bool state = 0;
 
 
+void sendFunction(byte mode, byte red, byte green, byte blue) {
+  Wire.beginTransmission(0x04);
+  Wire.write(mode);
+  Wire.write(red);
+  Wire.write(green);
+  Wire.write(blue);
+  Wire.endTransmission();
+  Serial.println("finish");
+}
+
+
 //effects requst handler
 void effectHandler() {
     if (HTTP.argName(0) == "effect" && HTTP.argName(1) == "param2") {   //check for correct params
+      byte effect = HTTP.arg(0).toInt();
       Serial.print("effect = ");
-      Serial.println(HTTP.arg(1));
+      Serial.println(effect);
 
+      byte param1 = HTTP.arg(1).toInt();
       Serial.print("param2 = ");
-      Serial.println(HTTP.arg(2));
+      Serial.println(param1);
       HTTP.send(200);
+      sendFunction(effect, effect, param1, param1);
     }
     else {  // bad requests handler
       HTTP.send(400, "text/plain", "Bad Request");
@@ -49,9 +64,11 @@ void effectHandler() {
 String led_switch() {
   if (state == 1){
     state = 0;
+    sendFunction(1, 1, 1, 1);
     Serial.println("on");
   } else {
     state = 1;
+    sendFunction(0, 0, 0, 0);
     Serial.println("off");
   }
   digitalWrite(led, state);
@@ -95,6 +112,8 @@ bool handleFileRead(String path) {
 void setup() {
   pinMode(led, OUTPUT);
   Serial.begin(9600);
+
+  Wire.begin(D1, D2); // initialize wire connection
 
   /****** Wi-Fi connection ******/
   WiFi.begin(ssid, password);
