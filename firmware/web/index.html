@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <style>
@@ -70,76 +70,57 @@
             font-size: 25px;
         }
 
-        .led_on{
-            background: #00ff11;
+        input#ON {
+            background: #59dc6b;
         }
 
-        .led_off{
-            background: #ff0007;
+        input#white_input {
+            background: #ffffff
+        }
+
+        input#yellow_input {
+            background: #d8e526
+        }
+
+        input#purple_input {
+            background: #7f1fc7
+        }
+
+        input#red_input {
+            background: #c53535
+        }
+
+        input#green_input {
+            background: #22af22
+        }
+
+        input#blue_input {
+            background: #28288d
         }
 
     </style>
     <title>PoolLights</title>
 </head>
 <body>
-<div class="container-1">
-    <div class="flat-1">
-        <input type="button" value="ON" id="ON" class="">
+    <div class="container-1">
+        <div class="flat-1">
+            <input type="button" value="вкл" id="ON" class="" onclick="fetch('/effect?mode=0&param=0')">
+        </div>
+        <div class="flat-2">
+            <input type="button" value="<--" class="r-" onclick="fetch('/effect?mode=100&param=0')">
+            <output datatype="text" id="efe">mode</output>
+            <input type="button" value="-->" class="r+" onclick="fetch('/effect?mode=100&param=1')">
+        </div>
+        <div class="flat-3">
+            <input type="button" value="белый" id="white_input" onclick="fetch('/effect?mode=2&param=0')">
+            <input type="button" value="жёлтый" id="yellow_input" onclick="fetch('/effect?mode=3&param=0')">
+            <input type="button" value="фиолетовый" id="purple_input" onclick="fetch('/effect?mode=4&param=0')">
+        </div>
+        <div class="flat-4">
+            <input type="button" value="красный" id="red_input" onclick="fetch('/effect?mode=5&param=0')">
+            <input type="button" value="зелёный" id="green_input" onclick="fetch('/effect?mode=6&param=0')">
+            <input type="button" value="синий" id="blue_input" onclick="fetch('/effect?mode=7&param=0')">
+        </div>
     </div>
-    <div class="flat-2">
-        <input type="button" value="<--" class="r-">
-        <output datatype="text" id="efe">mode</output>
-        <input type="button" value="-->" class="r+">
-    </div>
-    <div class="flat-3">
-        <input type="button" value="red" id="red_input">
-        <input type="button" value="blue" id="blue_input">
-        <input type="button" value="green" id="green_input">
-    </div>
-    <div class="flat-4">
-        <input type="button" value="purple" id="purple_input">
-        <input type="button" value="pink" id="pink_input">
-        <input type="button" value="yellow" id="yellow_input">
-    </div>
-</div>
-<script>
-    let led = document.getElementById("ON");
-    let led_status = 0;
-    function led_state(){
-        let request = new XMLHttpRequest();
-        request.open('GET', '/led_status', true);
-        request.onload = function() {
-            if (request.readyState == 4 && request.status == 200) {
-                let response = request.responseText;
-                led_status = Number.parseInt(response);
-                if (led_status == 0)
-                    led.classList.add('led_on');
-                else
-                    led.classList.add('led_off');
-            }
-        }
-        request.send();
-    }
-    function led_inverse() {
-        let request = new XMLHttpRequest();
-        request.open('GET', '/led_switch', false);
-        request.send();
-        if (request.readyState == 4 && request.status == 200) {
-            let response = request.responseText;
-            if (response == '0') {
-                led.v
-                led.classList.remove('led_off');
-                led.classList.add('led_on');
-                led_status = 0;
-            } else {
-                led.classList.remove('led_on');
-                led.classList.add('led_off');
-                led_status = 1;
-            }
-        }
-    }
-    document.addEventListener('DOMContentLoaded', led_state);
-    led.addEventListener("click", led_inverse);
-</script>
 </body>
 </html>
