@@ -26,15 +26,14 @@ ESP8266WebServer HTTP(80);
 
 
 /************* Variables ***********/
-bool state = 0;
+bool pos = 0;
 
 
-void sendFunction(byte mode, byte red, byte green, byte blue) {
+void sendFunction(byte mode, byte params) {
   Wire.beginTransmission(0x04);
   Wire.write(mode);
-  Wire.write(red);
-  Wire.write(green);
-  Wire.write(blue);
+  Wire.write(params);
+  Wire.write(pos);
   Wire.endTransmission();
   Serial.println("finish");
 }
@@ -42,48 +41,32 @@ void sendFunction(byte mode, byte red, byte green, byte blue) {
 
 //effects requst handler
 void effectHandler() {
-    if (HTTP.argName(0) == "effect" && HTTP.argName(1) == "param2") {   //check for correct params
-      byte effect = HTTP.arg(0).toInt();
-      Serial.print("effect = ");
-      Serial.println(effect);
+    if (HTTP.argName(0) == "mode" && HTTP.argName(1) == "param") {   //check for correct params
+      byte modes = HTTP.arg(0).toInt();
+      Serial.print("mode = ");
+      Serial.println(modes);
 
-      byte param1 = HTTP.arg(1).toInt();
-      Serial.print("param2 = ");
-      Serial.println(param1);
+      byte param = HTTP.arg(1).toInt();
+      Serial.print("param = ");
+      Serial.println(param);
       HTTP.send(200);
-      sendFunction(effect, effect, param1, param1);
+      if (modes != 0 && pos == 0) {
+        pos=1;
+      }
+      if (modes == 0 && pos == 0) {
+        Serial.println("modes == 0 && pos == 0");
+        pos=1;
+      } else if(modes == 0 && pos == 1){
+        pos = 0;
+      }
+      Serial.print("pos = ");
+      Serial.println(pos);
+      sendFunction(modes, param);
     }
     else {  // bad requests handler
       HTTP.send(400, "text/plain", "Bad Request");
       Serial.println("Bad Request");
     }
-}
-
-
-// switch function
-String led_switch() {
-  if (state == 1){
-    state = 0;
-    sendFunction(1, 1, 1, 1);
-    Serial.println("on");
-  } else {
-    state = 1;
-    sendFunction(0, 0, 0, 0);
-    Serial.println("off");
-  }
-  digitalWrite(led, state);
-  return String(state);
-}
-
-
-// on/off status checker
-String led_status() {
-  if (digitalRead(led)) {
-    state = 1;
-  } else {
-  state = 0;
-  }
-  return String(state);
 }
 
 
@@ -110,6 +93,9 @@ bool handleFileRead(String path) {
 
 
 void setup() {
+  pos = 0;
+  digitalWrite(led, pos);
+
   pinMode(led, OUTPUT);
   Serial.begin(9600);
 
@@ -124,15 +110,13 @@ void setup() {
   }
   Serial.println("connected");
 
-  //
+
   SPIFFS.begin();
   ftpSrv.begin("relay", "relay");
   HTTP.begin();
 
 
   // Processing HTTP requests
-  HTTP.on("/led_switch", []() {HTTP.send(200, "text/plain", led_switch()); });  // Turning on the flashlight
-  HTTP.on("/led_status", []() {HTTP.send(200, "text/plain", led_status()); });  // Status flashlight
   HTTP.on("/effect", effectHandler); //Associate the handler function to the path
 
   HTTP.onNotFound([]() {
