@@ -1,7 +1,19 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <FastLED.h>
+#include <93C46.h>
+#include <GyverWDT.h>
 
+
+#define pCS 7
+#define pSK 9
+#define pDI 10
+#define pDO 11
+#define longMode 0
+#define mode_cell 2
+#define pos_cell 1
+
+eeprom_93C46 e = eeprom_93C46(pCS, pSK, pDI, pDO);
 
 #define I2C_SLAVE_ADDRESS 0x04 // Address of the slave
 
@@ -12,11 +24,11 @@ bool status = 0;
 int i = 0;
 
 
-#define LED_COUNT 5         // num of LEDs
+#define LED_COUNT 93        // num of LEDs
 #define LED_DT 3            // LEDs pin
-int max_bright = 50;
+int max_bright = 255;
 
-volatile byte ledMode = 1;
+volatile byte ledMode = 2;
 
 // ---------------СЛУЖЕБНЫЕ ПЕРЕМЕННЫЕ-----------------
 int BOTTOM_INDEX = 0;        // светодиод начала отсчёта
@@ -41,11 +53,7 @@ float tcount = 0.0;          //-INC VAR FOR SIN LOOPS
 int lcount = 0;              //-ANOTHER COUNTING VAR
 
 
-volatile uint32_t btnTimer;
-volatile byte modeCounter;
 volatile boolean changeFlag;
-
-
 
 
 void one_color_all(int cred, int cgrn, int cblu) {       //-SET ALL LEDS TO ONE COLOR
@@ -54,7 +62,15 @@ void one_color_all(int cred, int cgrn, int cblu) {       //-SET ALL LEDS TO ONE 
   }
 }
 
-
+// EEPROM write function
+void eepromWrite(byte mode, byte pos){
+  e.ew_enable();
+  e.erase(mode_cell);
+  e.write(mode_cell, mode);
+  e.erase(pos_cell);
+  e.write(pos_cell, pos);
+  e.ew_disable();
+}
 
 void change_mode(byte newmode) {
   thissat = 255;
@@ -63,19 +79,18 @@ void change_mode(byte newmode) {
     case 9: thisdelay = 20; thisstep = 10; break;             //---RAINBOW LOOP
     case 10: thisdelay = 20; break;                            //---RANDOM BURST
     case 11: thisdelay = 40; thishue = 0; break;              //---POLICE LIGHTS SOLID
-    case 12: thishue = 160; thissat = 50; break;              //---STRIP FLICKER
-    case 13: thisdelay = 15; thishue = 0; break;              //---PULSE COLOR BRIGHTNESS
-    case 14: thisdelay = 30; thishue = 0; break;              //---PULSE COLOR SATURATION
-    case 15: thisdelay = 100; break;                          //---CELL AUTO - RULE 30 (RED)
-    case 16: thisdelay = 80; break;                           //---MARCH RANDOM COLORS
-    case 17: thisdelay = 80; break;                           //---MARCH RWB COLORS
-    case 18: thisdelay = 60; thishue = 95; break;             //---RADIATION SYMBOL
-    case 19: thisdelay = 15; break;                           //---NEW RAINBOW LOOP
-    case 20: thisdelay = 100; break;                          //---MARCH STRIP NOW CCW
-    case 21: thisdelay = 50; break;                           // colorWipe
-    case 22: thisdelay = 10; break;                           // rainbowTwinkle
-    case 23: thisdelay = 0; break;                            // Sparkle
-    case 24: thisdelay = 100; break;                          // Strobe
+    case 14: thisdelay = 15; thishue = 0; break;              //---PULSE COLOR BRIGHTNESS
+    case 15: thisdelay = 30; thishue = 0; break;              //---PULSE COLOR SATURATION
+    case 16: thisdelay = 100; break;                          //---CELL AUTO - RULE 30 (RED)
+    case 17: thisdelay = 80; break;                           //---MARCH RANDOM COLORS
+    case 18: thisdelay = 80; break;                           //---MARCH RWB COLORS
+    case 19: thisdelay = 60; thishue = 95; break;             //---RADIATION SYMBOL
+    case 20: thisdelay = 15; break;                           //---NEW RAINBOW LOOP
+    case 21: thisdelay = 100; break;                          //---MARCH STRIP NOW CCW
+    case 22: thisdelay = 50; break;                           // colorWipe
+    case 23: thisdelay = 10; break;                           // rainbowTwinkle
+    case 24: thisdelay = 0; break;                            // Sparkle
+    case 25: thisdelay = 100; break;                          // Strobe
   }
   bouncedirection = 0;
   one_color_all(0, 0, 0);
@@ -97,11 +112,13 @@ void receiveEvent(int howMany) {
   Serial.println(param);
   Serial.print("status = ");
   Serial.println(status);
+  Serial.print("led = ");
+  Serial.println(ledMode);
   Serial.println();
   if (modes == 0 && status == 1){
     change_mode(ledMode); // turn on after shutdown with saving last mode
   }
-  if (modes > 0 && modes <= 7 && status == 1) {
+  if (modes > 1 && modes <= 7 && status == 1) {
     ledMode = modes;
   }
   if(modes == 100){
@@ -111,14 +128,17 @@ void receiveEvent(int howMany) {
     if (param == 1){
       ledMode++;  // increasing the mode number
     }
-    change_mode(ledMode);
   }
+    eepromWrite(ledMode, status);
+    change_mode(ledMode);
 }
 
 
-void setup()
-{
+void setup() {
   Serial.begin(9600);
+  Watchdog.enable(RESET_MODE, WDT_PRESCALER_512);
+
+  e.set_mode(longMode);
 
   Wire.begin(I2C_SLAVE_ADDRESS); // join i2c network
   Wire.onReceive(receiveEvent);
@@ -126,7 +146,8 @@ void setup()
   LEDS.setBrightness(max_bright);
   FastLED.addLeds<NEOPIXEL, LED_DT>(leds, LED_COUNT);
 
-  one_color_all(0, 0, 0);
+  status = e.read(pos_cell);
+  ledMode = e.read(mode_cell);
   LEDS.show();
 }
 
@@ -137,10 +158,9 @@ boolean safeDelay(int delTime) {
   while (true) {
     if (millis() - thisTime >= delTime){
       return true;
-      break;
     }
+    break;
   }
-  Serial.println(thisTime);
   thisTime = 0;
   return false;
 }
@@ -300,20 +320,6 @@ void ems_lightsALL() {                  //-m8-EMERGENCY LIGHTS (TWO COLOR SOLID)
   leds[idexB] = CHSV(thathue, thissat, 255);
   LEDS.show();
   if (safeDelay(thisdelay)) return;
-}
-
-
-void flicker() {                          //-m9-FLICKER EFFECT
-  int random_bright = random(0, 255);
-  int random_delay = random(10, 100);
-  int random_bool = random(0, random_bright);
-  if (random_bool < 10) {
-    for (int i = 0 ; i < LED_COUNT; i++ ) {
-      leds[i] = CHSV(thishue, thissat, random_bright);
-    }
-    LEDS.show();
-    if (safeDelay(random_delay)) return;
-  }
 }
 
 
@@ -629,7 +635,7 @@ void rainbowCycle(int SpeedDelay) {
 void loop(){
   if (status == 1){
     switch (ledMode) {
-      case  1: ledMode = 24;
+      case  1: ledMode = 23;
       case  2: simple_color(); break;
       case  3: simple_color(); break;
       case  4: simple_color(); break;
@@ -640,25 +646,26 @@ void loop(){
       case  9: rainbow_loop(); break;            // крутящаяся радуга
       case 10: random_burst(); break;            // случайная смена цветов
       case 11: ems_lightsALL(); break;           // вращается половина красных и половина синих
-      case 12: flicker(); break;                 // случайный стробоскоп
-      case 13: pulse_one_color_all(); break;     // пульсация одним цветом
-      case 14: pulse_one_color_all_rev(); break; // пульсация со сменой цветов
-      case 15: fade_vertical(); break;           // плавная смена яркости по вертикали (для кольца)
-      case 16: rule30(); break;                  // безумие красных светодиодов
-      case 17: random_march(); break;            // безумие случайных цветов
-      case 18: rwb_march(); break;               // белый синий красный бегут по кругу (ПАТРИОТИЗМ!)
-      case 19: rainbow_vertical(); break;        // радуга в вертикаьной плоскости (кольцо)
-      case 20: rgb_propeller(); break;           // RGB пропеллер
-      case 21: matrix(); break;                  // зелёненькие бегают по кругу случайно
-      case 22: new_rainbow_loop(); break;        // крутая плавная вращающаяся радуга
-      case 23: Fire(55, 120, thisdelay); break;  // линейный огонь
-      case 24: rainbowCycle(thisdelay); break;   // очень плавная вращающаяся радуга
-      case 25: ledMode = 2;
+      case 12: pulse_one_color_all(); break;     // пульсация одним цветом
+      case 13: pulse_one_color_all_rev(); break; // пульсация со сменой цветов
+      case 14: fade_vertical(); break;           // плавная смена яркости по вертикали (для кольца)
+      case 15: rule30(); break;                  // безумие красных светодиодов
+      case 16: random_march(); break;            // безумие случайных цветов
+      case 17: rwb_march(); break;               // белый синий красный бегут по кругу (ПАТРИОТИЗМ!)
+      case 18: rainbow_vertical(); break;        // радуга в вертикаьной плоскости (кольцо)
+      case 19: rgb_propeller(); break;           // RGB пропеллер
+      case 20: matrix(); break;                  // зелёненькие бегают по кругу случайно
+      case 21: new_rainbow_loop(); break;        // крутая плавная вращающаяся радуга
+      case 22: Fire(55, 120, thisdelay); break;  // линейный огонь
+      case 23: rainbowCycle(thisdelay); break;   // очень плавная вращающаяся радуга
+      case 24: ledMode = 2;
     }
   }
   if (status == 0) {
     one_color_all(0, 0, 0);
     FastLED.show();
   }
+  Serial.println(ledMode);
   FastLED.show();
+  Watchdog.reset();
 }

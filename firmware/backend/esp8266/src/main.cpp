@@ -8,27 +8,28 @@
 
 
 /************* Led Settings ***********/
-const byte led = 2;       // Led pin
-
+const byte led = 2;                   // Led pin
 
 /************ Wi-Fi Settings **********/
-IPAddress ip(10,1,1,222); // Static IP
+IPAddress ip(10,1,1,222);             // Static IP (192,168,10,222);
 IPAddress gateway(10,1,1,222);
 IPAddress subnet(255, 255, 255, 0);
 
+volatile boolean changeFlag;
 
 /************ Ftp Settings ************/
 FtpServer ftpSrv;
 
 
 /********* WebServer Settings *********/
-ESP8266WebServer HTTP(80);
+ESP8266WebServer HTTP(23223);
 
 
 /************* Variables ***********/
 bool pos = 0;
 
 
+// i2c send func
 void sendFunction(byte mode, byte params) {
   Wire.beginTransmission(0x04);
   Wire.write(mode);
@@ -41,25 +42,28 @@ void sendFunction(byte mode, byte params) {
 
 //effects requst handler
 void effectHandler() {
-    if (HTTP.argName(0) == "mode" && HTTP.argName(1) == "param") {   //check for correct params
+    if (HTTP.argName(0) == "mode" && HTTP.argName(1) == "param") {
       byte modes = HTTP.arg(0).toInt();
-      Serial.print("mode = ");
-      Serial.println(modes);
-
       byte param = HTTP.arg(1).toInt();
+
+      Serial.print("mode = ");
+      Serial.print(modes);
+      Serial.print("\t");
       Serial.print("param = ");
-      Serial.println(param);
+      Serial.print(param);
+      Serial.print("\t");
+
       HTTP.send(200);
+
       if (modes != 0 && pos == 0) {
         pos=1;
       }
       if (modes == 0 && pos == 0) {
-        Serial.println("modes == 0 && pos == 0");
         pos=1;
-      } else if(modes == 0 && pos == 1){
+      } else if (modes == 0 && pos == 1){
         pos = 0;
       }
-      Serial.print("pos = ");
+      Serial.print("    pos = ");
       Serial.println(pos);
       sendFunction(modes, param);
     }
@@ -94,7 +98,6 @@ bool handleFileRead(String path) {
 
 void setup() {
   pos = 0;
-  digitalWrite(led, pos);
 
   pinMode(led, OUTPUT);
   Serial.begin(9600);
@@ -103,13 +106,12 @@ void setup() {
 
   /****** Wi-Fi connection ******/
   WiFi.begin(ssid, password);
-  WiFi.config(ip, gateway, subnet);
+  // WiFi.config(ip, gateway, subnet);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("connected");
-
 
   SPIFFS.begin();
   ftpSrv.begin("relay", "relay");

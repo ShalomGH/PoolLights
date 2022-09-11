@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <style>
         body {
-            text-align: center;
-            height: 100%;
-            width: 100%;
-            background: #eff0d1;
-            font-size: 30px;
+           text-align: center;
+           height: 100%;
+           width: 100%;
+           background: #eff0d1;
         }
 
         html {
@@ -36,7 +37,7 @@
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             grid-gap: 1em;
         }
 
@@ -67,7 +68,7 @@
             height: 100%;
             background: #77ba99;
             border: 0;
-            font-size: 25px;
+            font-size: 40px;
         }
 
         input#ON {
@@ -95,10 +96,11 @@
         }
 
         input#blue_input {
-            background: #28288d
+            background: #3e3ea8
         }
 
     </style>
+    <meta charset="UTF-8">
     <title>PoolLights</title>
 </head>
 <body>
@@ -107,9 +109,8 @@
             <input type="button" value="вкл" id="ON" class="" onclick="fetch('/effect?mode=0&param=0')">
         </div>
         <div class="flat-2">
-            <input type="button" value="<--" class="r-" onclick="fetch('/effect?mode=100&param=0')">
-            <output datatype="text" id="efe">mode</output>
-            <input type="button" value="-->" class="r+" onclick="fetch('/effect?mode=100&param=1')">
+            <input type="button" value="<<<" class="r-" onclick="fetch('/effect?mode=100&param=0')">
+            <input type="button" value=">>>" class="r+" onclick="fetch('/effect?mode=100&param=1')">
         </div>
         <div class="flat-3">
             <input type="button" value="белый" id="white_input" onclick="fetch('/effect?mode=2&param=0')">
